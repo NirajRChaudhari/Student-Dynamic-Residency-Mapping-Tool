@@ -1,2 +1,2 @@
-prefNo, pref)
-                # print("\n")
+dynamic_allocation_of_students()
+    
