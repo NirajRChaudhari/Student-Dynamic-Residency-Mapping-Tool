@@ -134,7 +134,6 @@ def dynamic_allocation_of_students():
     for index in range(1, studentPrefSheet.max_column - 1):
         for studentUSCId in students:
 
-            print(studentUSCId)
             if (students[studentUSCId]["preferences"].get(index)):
                 currentOrganization = students[studentUSCId]["preferences"].get(
                     index)
@@ -190,8 +189,9 @@ def populate_processing_workbook():
         studentsMappingSheet.cell(i + 2, 1).value = key
         studentsMappingSheet.cell(i + 2, 2).value = value['name']
         for slot, org in value['organizationsCodeSlotMapping'].items():
-            studentsMappingSheet.cell(
-                i + 2, slot + 3).value = organizations[org]['name']
+            if (org != None):
+                studentsMappingSheet.cell(
+                    i + 2, slot + 3).value = organizations[org]['name']
 
     processingWorkbook.create_sheet("OrganizationMapping", 2)
     organizationMappingSheet = processingWorkbook["OrganizationMapping"]
@@ -207,8 +207,10 @@ def populate_processing_workbook():
     for i, (key, value) in enumerate(organizations.items()):
         organizationMappingSheet.cell(i + 2, 1).value = key
         organizationMappingSheet.cell(i + 2, 2).value = value['name']
-        for slot, student in value['studentsIDSlotMapping'].items():
-            organizationMappingSheet.cell(i + 2, slot + 3).value = student
+        for slot, studentID in value['studentsIDSlotMapping'].items():
+            if (studentID != None):
+                organizationMappingSheet.cell(
+                    i + 2, slot + 3).value = students[studentID]['name']
 
 
 def main():
