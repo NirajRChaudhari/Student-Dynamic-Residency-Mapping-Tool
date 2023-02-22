@@ -40,9 +40,9 @@ def initialize():
     # Initialize timeCodeToSlot dictionary
     timeSlots = timeSlotSheet.max_row - 1
     for i in range(2, timeSlotSheet.max_row + 1):
-        timeCode = timeSlotSheet.cell(i, 2).value
+        timeCode = timeSlotSheet.cell(i, 1).value
         timeCodeToSlot[timeCode] = {
-            'code': timeSlotSheet.cell(i, 1).value
+            'slot': timeSlotSheet.cell(i, 2).value
         }
 
     # Initialize organizations dictionary
@@ -53,7 +53,7 @@ def initialize():
         organizations[orgCode]['name'] = orgSheet.cell(i, 1).value
         organizations[orgCode]['allocatedStudents'] = 0
         organizations[orgCode]['studentsIDSlotMapping'] = {}
-        for i in range(0, timeSlots):
+        for i in range(1, timeSlots+1):
             organizations[orgCode]['studentsIDSlotMapping'][i] = None
 
     # Initialize students dictionary
@@ -64,12 +64,12 @@ def initialize():
         students[uscId]['name'] = studentPrefSheet.cell(i, 2).value
         students[uscId]['allocatedOrganizations'] = 0
         students[uscId]['organizationsCodeSlotMapping'] = {}
-        for slot in range(0, timeSlots):
+        for slot in range(1, timeSlots+1):
             students[uscId]['organizationsCodeSlotMapping'][slot] = None
 
-        prefNo = 1
-
         students[uscId]["preferences"] = {}
+
+        prefNo = 1
         for j in range(3, studentPrefSheet.max_column + 1):
             students[uscId]["preferences"][prefNo] = orgNameToCode[studentPrefSheet.cell(
                 i, j).value]['code']
@@ -91,7 +91,7 @@ def preprocessing_student_preferences_sheet():
     # Print the dictionary timeCodeToSlot with proper formatting
     print("\n\n\nTime Slots:\n")
     for key, value in timeCodeToSlot.items():
-        print(key, value['code'])
+        print(key, value['slot'])
 
     # Print the dictionary students with proper formatting
     print("\n\n\nStudents:\n")
@@ -152,7 +152,7 @@ def dynamic_allocation_of_students():
                     "\nSTUDENT WITH USC ID : "+str(studentUSCId)+" HAS ALL TIME SLOTS FULL SO SKIP CURRENT PREFERENCE\n")
 
             orgAssigned = False
-            for slot in range(0, timeSlots):
+            for slot in range(1, timeSlots+1):
                 if (students[studentUSCId]['organizationsCodeSlotMapping'][slot] == None):
                     if (organizations[currentOrganization]['studentsIDSlotMapping'][slot] == None):
                         orgAssigned = True
@@ -180,9 +180,9 @@ def populate_processing_workbook():
     # Write the headings to the students mapping sheet
     studentsMappingSheet.cell(1, 1).value = "USC ID"
     studentsMappingSheet.cell(1, 2).value = "Student Name"
-    for i in range(0, timeSlots):
+    for i in range(1, timeSlots+1):
         studentsMappingSheet.cell(
-            1, i + 3).value = timeCodeToSlot[i]['code']
+            1, i + 2).value = timeCodeToSlot[i]['slot']
 
     # Write the students dictionary to the students mapping sheet
     for i, (key, value) in enumerate(students.items()):
@@ -191,7 +191,7 @@ def populate_processing_workbook():
         for slot, org in value['organizationsCodeSlotMapping'].items():
             if (org != None):
                 studentsMappingSheet.cell(
-                    i + 2, slot + 3).value = organizations[org]['name']
+                    i + 2, slot + 2).value = organizations[org]['name']
 
     processingWorkbook.create_sheet("OrganizationMapping", 2)
     organizationMappingSheet = processingWorkbook["OrganizationMapping"]
@@ -200,9 +200,9 @@ def populate_processing_workbook():
     organizationMappingSheet.cell(1, 1).value = "Organization Code"
     organizationMappingSheet.cell(1, 2).value = "Organization Name"
 
-    for i in range(0, timeSlots):
+    for i in range(1, timeSlots+1):
         organizationMappingSheet.cell(
-            1, i + 3).value = timeCodeToSlot[i]['code']
+            1, i + 2).value = timeCodeToSlot[i]['slot']
 
     for i, (key, value) in enumerate(organizations.items()):
         organizationMappingSheet.cell(i + 2, 1).value = key
@@ -210,7 +210,7 @@ def populate_processing_workbook():
         for slot, studentID in value['studentsIDSlotMapping'].items():
             if (studentID != None):
                 organizationMappingSheet.cell(
-                    i + 2, slot + 3).value = students[studentID]['name']
+                    i + 2, slot + 2).value = students[studentID]['name']
 
 
 def main():
