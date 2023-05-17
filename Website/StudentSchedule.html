@@ -1,0 +1,88 @@
+<html>
+  <head>
+    <title>USC Price School</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.5/xlsx.min.js"></script>
+  </head>
+  <body>
+    <button
+      class="button"
+      onclick="window.location.href='OrganizationSchedule.html'"
+    >
+      Organization Schedule
+    </button>
+
+    <div id="container">
+      <div id="header">
+        <h1>&nbsp;STUDENT - SCHEDULE&nbsp;</h1>
+      </div>
+      <div id="content">
+        <input type="file" id="file_upload" />
+        <button onclick="upload()">Upload</button>
+        <br />
+        <br /> 
+        <!-- table to display the excel data
+
+        <table id="display_excel_data" border="1"></table>
+      </div>
+    </div>
+    <script>
+      //Method to read excel file and convert it into JSON
+      function excelFileToJSON() {
+        try {
+          //Read excel file as binary string
+          var reader = new FileReader();
+          reader.readAsBinaryString("ProcessingWorkbook.xlsx");
+
+          reader.onload = function (e) {
+            var data = e.target.result;
+
+            var workbook = XLSX.read(data, {
+              type: "binary",
+            });
+
+            var result = {};
+
+            //reading only first sheet data
+            var jsonData = XLSX.utils.sheet_to_json(
+              workbook.Sheets["StudentsMapping"]
+            );
+
+            console.log(jsonData);
+            //displaying the json result into HTML table
+            displayJsonToHtmlTable(jsonData);
+          };
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      //Method to display the data in HTML Table
+      function displayJsonToHtmlTable(jsonData) {
+        var table = document.getElementById("display_excel_data");
+        if (jsonData.length > 0) {
+          var htmlData =
+            "<tr><th>Student Name</th><th>Address</th><th>Email ID</th><th>Age</th></tr>";
+          for (var i = 0; i < jsonData.length; i++) {
+            var row = jsonData[i];
+            htmlData +=
+              "<tr><td>" +
+              row["Student Name"] +
+              "</td><td>" +
+              row["Address"] +
+              "</td><td>" +
+              row["Email ID"] +
+              "</td><td>" +
+              row["Age"] +
+              "</td></tr>";
+          }
+          table.innerHTML = htmlData;
+        } else {
+          table.innerHTML = "There is no data in Excel";
+        }
+      }
+
+      excelFileToJSON();
+    </script>
+  </body>
+</html>
