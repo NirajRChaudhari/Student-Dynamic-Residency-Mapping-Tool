@@ -1,5 +1,5 @@
 from openpyxl import Workbook, load_workbook
-from openpyxl.styles import Font
+from openpyxl.styles import Font, Color
 
 
 def initialize():
@@ -51,9 +51,12 @@ def initialize():
 
         organizations[orgCode] = {}
         organizations[orgCode]['name'] = orgSheet.cell(i, 1).value
+        organizations[orgCode]['slotsAllocatedToOrg'] = orgSheet.cell(
+            i, 3).value
         organizations[orgCode]['allocatedStudents'] = 0
         organizations[orgCode]['studentsIDSlotMapping'] = {}
-        for i in range(1, timeSlots+1):
+
+        for i in range(1, organizations[orgCode]['slotsAllocatedToOrg']+1):
             organizations[orgCode]['studentsIDSlotMapping'][i] = None
 
     # Initialize students dictionary
@@ -74,7 +77,6 @@ def initialize():
             students[uscId]["preferences"][prefNo] = orgNameToCode[studentPrefSheet.cell(
                 i, j).value]['code']
             prefNo += 1
-        print("\n\n")
 
 
 def preprocessing_student_preferences_sheet():
@@ -134,17 +136,23 @@ def dynamic_allocation_of_students():
     for index in range(1, studentPrefSheet.max_column - 1):
         for studentUSCId in students:
 
-            if (students[studentUSCId]["preferences"].get(index)):
-                currentOrganization = students[studentUSCId]["preferences"].get(
-                    index)
+            # Check if the student has any more preferences and Fetch current organization preference
+            currentOrganization = students[studentUSCId]["preferences"].get(
+                index)
+
+            if (currentOrganization != None and currentOrganization != "" and currentOrganization != "None"):
                 if (organizations.get(currentOrganization) == None):
                     print(
                         "\nWRONG ORGANIZATION NAME AT PREFERENCE "+str(1)+" FOR STUDENT WITH USC ID : "+str(studentUSCId)+"\n")
                     return
-
-            if (organizations.get(students[studentUSCId]["preferences"].get(index))['allocatedStudents'] == timeSlots):
+            else:
                 print(
-                    "\nORGANIZATION "+currentOrganization+" HAS ALL TIME SLOTS FULL SO PREFERENCE : "+str(index)+" OF STUDENT WITH USC ID : "+str(studentUSCId)+" CANNOT BE CONSIDERED\n")
+                    "\nSTUDENT WITH USC ID : "+str(studentUSCId)+" HAS NO MORE PREFERENCES\n")
+                continue
+
+            if (organizations.get(currentOrganization)['allocatedStudents'] == organizations.get(currentOrganization)['slotsAllocatedToOrg']):
+                print(
+                    "\nORGANIZATION "+currentOrganization+" HAS IT'S ALL TIME SLOTS FULL SO PREFERENCE : "+str(index)+" OF STUDENT WITH USC ID : "+str(studentUSCId)+" CANNOT BE CONSIDERED\n")
                 continue
 
             if (students[studentUSCId]['allocatedOrganizations'] == timeSlots):
@@ -153,6 +161,10 @@ def dynamic_allocation_of_students():
 
             orgAssigned = False
             for slot in range(1, timeSlots+1):
+
+                if (slot > organizations[currentOrganization]['slotsAllocatedToOrg']):
+                    break
+
                 if (students[studentUSCId]['organizationsCodeSlotMapping'][slot] == None):
                     if (organizations[currentOrganization]['studentsIDSlotMapping'][slot] == None):
                         orgAssigned = True
@@ -180,18 +192,29 @@ def populate_processing_workbook():
     # Write the headings to the students mapping sheet
     studentsMappingSheet.cell(1, 1).value = "USC ID"
     studentsMappingSheet.cell(1, 2).value = "Student Name"
+
+    studentsMappingSheet.cell(1, 1).font = Font(color="00FF0000", bold=True)
+    studentsMappingSheet.cell(1, 2).font = Font(color="00FF0000", bold=True)
+
     for i in range(1, timeSlots+1):
         studentsMappingSheet.cell(
             1, i + 2).value = timeCodeToSlot[i]['slot']
 
+        studentsMappingSheet.cell(
+            1, i + 2).font = Font(color="00FF0000", bold=True)
+
     # Write the students dictionary to the students mapping sheet
-    for i, (key, value) in enumerate(students.items()):
-        studentsMappingSheet.cell(i + 2, 1).value = key
-        studentsMappingSheet.cell(i + 2, 2).value = value['name']
-        for slot, org in value['organizationsCodeSlotMapping'].items():
-            if (org != None):
+    for i, (uscId, student) in enumerate(students.items()):
+        studentsMappingSheet.cell(i + 2, 1).value = uscId
+        studentsMappingSheet.cell(i + 2, 2).value = student['name']
+
+        for slot in range(1, timeSlots+1):
+            if (student['organizationsCodeSlotMapping'][slot] == None):
+                # No organization assigned
+                studentsMappingSheet.cell(i + 2, slot + 2).value = ""
+            else:
                 studentsMappingSheet.cell(
-                    i + 2, slot + 2).value = organizations[org]['name']
+                    i + 2, slot + 2).value = organizations[student['organizationsCodeSlotMapping'][slot]]['name']
 
     processingWorkbook.create_sheet("OrganizationMapping", 2)
     organizationMappingSheet = processingWorkbook["OrganizationMapping"]
@@ -200,17 +223,31 @@ def populate_processing_workbook():
     organizationMappingSheet.cell(1, 1).value = "Organization Code"
     organizationMappingSheet.cell(1, 2).value = "Organization Name"
 
+    organizationMappingSheet.cell(1, 1).font = Font(
+        color="00FF0000", bold=True)
+    organizationMappingSheet.cell(1, 2).font = Font(
+        color="00FF0000", bold=True)
+
     for i in range(1, timeSlots+1):
         organizationMappingSheet.cell(
             1, i + 2).value = timeCodeToSlot[i]['slot']
+        organizationMappingSheet.cell(
+            1, i + 2).font = Font(color="00FF0000", bold=True)
 
-    for i, (key, value) in enumerate(organizations.items()):
-        organizationMappingSheet.cell(i + 2, 1).value = key
-        organizationMappingSheet.cell(i + 2, 2).value = value['name']
-        for slot, studentID in value['studentsIDSlotMapping'].items():
-            if (studentID != None):
+    for i, (code, org) in enumerate(organizations.items()):
+        organizationMappingSheet.cell(i + 2, 1).value = code
+        organizationMappingSheet.cell(i + 2, 2).value = org['name']
+
+        for slot in range(1, timeSlots+1):
+            if (slot > org['slotsAllocatedToOrg']):
                 organizationMappingSheet.cell(
-                    i + 2, slot + 2).value = students[studentID]['name']
+                    i + 2, slot + 2).value = "NOT_AVAILABLE"
+            elif (org['studentsIDSlotMapping'][slot] == None):
+                organizationMappingSheet.cell(
+                    i + 2, slot + 2).value = ""  # No student assigned
+            else:
+                organizationMappingSheet.cell(
+                    i + 2, slot + 2).value = students[org['studentsIDSlotMapping'][slot]]['name']
 
 
 def main():
@@ -221,7 +258,7 @@ def main():
 
     populate_processing_workbook()
     # Save the processing sheet
-    processingWorkbook.save("DataFiles/ProcessingWorkbook.xlsx")
+    processingWorkbook.save("DataFiles/ProcessingWorkbook_1.xlsx")
 
 
 if __name__ == "__main__":
