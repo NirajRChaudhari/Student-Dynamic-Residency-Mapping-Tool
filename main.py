@@ -150,7 +150,7 @@ def dynamic_allocation_of_students():
                     "\nSTUDENT WITH USC ID : "+str(studentUSCId)+" HAS NO MORE PREFERENCES\n")
                 continue
 
-            if (organizations.get(currentOrganization)['allocatedStudents'] == organizations.get(currentOrganization)['slotsAllocatedToOrg']):
+            if (organizations.get(currentOrganization)['allocatedStudents'] >= organizations.get(currentOrganization)['slotsAllocatedToOrg']):
                 print(
                     "\nORGANIZATION "+currentOrganization+" HAS IT'S ALL TIME SLOTS FULL SO PREFERENCE : "+str(index)+" OF STUDENT WITH USC ID : "+str(studentUSCId)+" CANNOT BE CONSIDERED\n")
                 continue
