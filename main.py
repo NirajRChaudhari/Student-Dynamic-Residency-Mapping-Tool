@@ -1,5 +1,6 @@
 from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Font, Color
+import random
 
 
 def initialize():
@@ -133,54 +134,55 @@ def dynamic_allocation_of_students():
     global students
     global organizations
 
-    for index in range(1, studentPrefSheet.max_column - 1):
-        for studentUSCId in students:
+    max_preferences = 10
+    last_allocated_preference = {studentUSCId: 0 for studentUSCId in students}  # Track the last allocated preference for each student
 
-            # Check if the student has any more preferences and Fetch current organization preference
-            currentOrganization = students[studentUSCId]["preferences"].get(
-                index)
+    allocation_possible = True
 
-            if (currentOrganization != None and currentOrganization != "" and currentOrganization != "None"):
-                if (organizations.get(currentOrganization) == None):
-                    print(
-                        "\nWRONG ORGANIZATION NAME AT PREFERENCE "+str(1)+" FOR STUDENT WITH USC ID : "+str(studentUSCId)+"\n")
-                    return
-            else:
-                print(
-                    "\nSTUDENT WITH USC ID : "+str(studentUSCId)+" HAS NO MORE PREFERENCES\n")
-                continue
+    while allocation_possible:
+        allocation_possible = False  # Reset the flag for each round
 
-            if (organizations.get(currentOrganization)['allocatedStudents'] >= organizations.get(currentOrganization)['slotsAllocatedToOrg']):
-                print(
-                    "\nORGANIZATION "+currentOrganization+" HAS IT'S ALL TIME SLOTS FULL SO PREFERENCE : "+str(index)+" OF STUDENT WITH USC ID : "+str(studentUSCId)+" CANNOT BE CONSIDERED\n")
-                continue
+        # Shuffle the order of students at the start of each iteration to ensure fairness
+        student_ids = list(students.keys())
+        random.shuffle(student_ids)
 
-            if (students[studentUSCId]['allocatedOrganizations'] == timeSlots):
-                print(
-                    "\nSTUDENT WITH USC ID : "+str(studentUSCId)+" HAS ALL TIME SLOTS FULL SO SKIP CURRENT PREFERENCE\n")
+        # Iterate over each student in the randomized order
+        for studentUSCId in student_ids:
+            # Check if the student has already been allocated the maximum number of organizations
+            if students[studentUSCId]['allocatedOrganizations'] >= timeSlots:
+                continue  # Skip to the next student
 
-            orgAssigned = False
-            for slot in range(1, timeSlots+1):
+            # Start from the next preference after the last successful allocation
+            for pref_index in range(last_allocated_preference[studentUSCId] + 1, max_preferences + 1):
+                currentOrganization = students[studentUSCId]["preferences"].get(pref_index)
 
-                if (slot > organizations[currentOrganization]['slotsAllocatedToOrg']):
-                    break
+                if not currentOrganization or organizations.get(currentOrganization) is None:
+                    continue  # Skip if preference is invalid
 
-                if (students[studentUSCId]['organizationsCodeSlotMapping'][slot] == None):
-                    if (organizations[currentOrganization]['studentsIDSlotMapping'][slot] == None):
-                        orgAssigned = True
+                if organizations[currentOrganization]['allocatedStudents'] >= organizations[currentOrganization]['slotsAllocatedToOrg']:
+                    continue  # Skip if no available slots in the organization
 
-                        organizations[currentOrganization]['allocatedStudents'] += 1
-                        students[studentUSCId]['allocatedOrganizations'] += 1
-
-                        organizations[currentOrganization]['studentsIDSlotMapping'][slot] = studentUSCId
-
-                        students[studentUSCId]['organizationsCodeSlotMapping'][slot] = currentOrganization
-
+                # Attempt to allocate the student to the current organization
+                org_assigned = False
+                for slot in range(1, timeSlots + 1):
+                    if slot > organizations[currentOrganization]['slotsAllocatedToOrg']:
                         break
 
-            if (not orgAssigned):
-                print("\nNO COMPATIBILITY IN STUDENT WITH USC ID : "+str(studentUSCId) +
-                      " WITH PREFERENCE "+str(index)+" AND ORGANIZATION "+currentOrganization+" FOUND\n")
+                    if students[studentUSCId]['organizationsCodeSlotMapping'][slot] is None and organizations[currentOrganization]['studentsIDSlotMapping'][slot] is None:
+                        # Allocate the student
+                        organizations[currentOrganization]['allocatedStudents'] += 1
+                        students[studentUSCId]['allocatedOrganizations'] += 1
+                        organizations[currentOrganization]['studentsIDSlotMapping'][slot] = studentUSCId
+                        students[studentUSCId]['organizationsCodeSlotMapping'][slot] = currentOrganization
+                        
+                        # Update last allocated preference
+                        last_allocated_preference[studentUSCId] = pref_index
+                        org_assigned = True
+                        allocation_possible = True  # Indicate that an allocation was made in this round
+                        break  # Allocation successful, break the slot loop
+
+                if org_assigned:
+                    break  # Move to the next student after successful allocation
 
 
 def populate_processing_workbook():
