@@ -1,48 +1,48 @@
 body {
-    /* Set Background Image */
-    background-image: url("uscPriceSchool.jpg");
-    background-repeat: no-repeat;
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    text-align: center;
+  /* Set Background Image */
+  background-image: url("uscPriceSchool.jpg");
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  text-align: center;
 }
 
 button {
-    background-color: brown;
-    border: none;
-    color: white;
-    padding: 10px 20px;
-    text-align: center;
-    display: inline-block;
-    font-size: 16px;
-    margin: 4px 2px;
-    cursor: pointer;
-    border-radius: 8px;
-    margin-top: 10px;
-    margin-bottom: 30px;
+  background-color: brown;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  text-align: center;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 8px;
+  margin-top: 10px;
+  margin-bottom: 30px;
 }
 
 #container {
-    padding: 20px;
-    border-radius: 10px;
-    margin-left: auto;
-    margin-right: auto;
+  padding: 20px;
+  border-radius: 10px;
+  margin-left: auto;
+  margin-right: auto;
 
-    /* Blur the background */
-    background-color: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(5px);
+  /* Blur the background */
+  background-color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(5px);
 
-    /* Set the width of the container */
-    width: 50%;
+  /* Set the width of the container */
+  width: 50%;
 }
 
-#header h1{
-    font-family: 'Roboto', sans-serif;
-    text-align: center;
-    margin-top: 20px;
-    margin-bottom: 20px;
+#header h1 {
+  font-family: "Roboto", sans-serif;
+  text-align: center;
+  margin-top: 20px;
+  margin-bottom: 20px;
 
-    /* Underline text */
-    text-decoration: underline;
+  /* Underline text */
+  text-decoration: underline;
 }
