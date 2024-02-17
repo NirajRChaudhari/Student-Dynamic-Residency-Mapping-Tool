@@ -50,9 +50,9 @@ def initialize():
 
     # Initialize students with preferences
     for i in range(2, studentPrefSheet.max_row + 1):
-        uscId = studentPrefSheet.cell(i, 1).value
+        uscId = studentPrefSheet.cell(i, 2).value
         students[uscId] = {
-            'name': studentPrefSheet.cell(i, 2).value,
+            'name': studentPrefSheet.cell(i, 1).value,
             'allocatedOrganizations': 0,
             'organizationsCodeSlotMapping': {},
             "preferences": {}
